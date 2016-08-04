@@ -1,0 +1,13 @@
+{
+  "name": "inScreenArea",
+  "version": "1.0.0",
+  "description": "Simple to use jquery plugin",
+  "main": "index.js",
+  "author": "Dimitri van der Vliet",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-uglify": "^1.5.4"
+  }
+}
