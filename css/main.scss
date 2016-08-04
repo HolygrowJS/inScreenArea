@@ -1,0 +1,74 @@
+@import "holyTools";
+@import "arrowBottom";
+
+
+// General
+body {
+  overflow-x: hidden;
+}
+
+h1,h2,h3,h5,h6 {
+  text-align: center;
+}
+
+h1 {
+  font-size: 80px;
+  font-weight: 100;
+}
+
+h3 {
+  font-size: 50px;
+}
+
+.row {
+  margin: 20vh 0;
+}
+
+.img-contain {
+  background-size: contain!important;
+  background-repeat: no-repeat!important;
+}
+
+header {
+  height: 500px;
+  background: url(../img/simple.jpg) no-repeat right top;
+  background-size: cover;
+
+  .v-align {
+    background: rgba(0,4,40, 0.5); /* fallback for old browsers */
+    background: -webkit-linear-gradient(to left, rgba(0,4,40, 0.95) , rgba(0,78,146, 0.95)); /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to left, rgba(0,4,40, 0.95) , rgba(0,78,146, 0.95)); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+  }
+
+  .dh-align {
+    margin-top: 40px;
+
+    .btn {
+      margin: 0 20px;
+      max-width: 200px;
+      width: 100%;
+    }
+  }
+}
+
+
+main {
+  margin: 40px 0;
+
+  .screen-area {
+
+    img {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      display: block;
+    }
+  }
+
+  .animate-css {
+    margin: 30vh 0;
+  }
+}
+
+
+
