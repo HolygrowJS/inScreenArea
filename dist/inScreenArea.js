@@ -10,7 +10,8 @@
                 elementTolerance: 0,
                 debug: false,
                 debugOptions: {
-                    background: 'rgba(0, 110, 85, 0.2)',
+                    areaBgColor: 'rgba(255,216,0, 0.05)',
+                    areaOutline: '5px #FFD800 dashed',
                     zIndex: '999',
                     elIdentifier: true,
                     elIdentifierStyle: {
@@ -81,13 +82,13 @@
                     var rect = this.getBoundingClientRect();
 
                     if (_this.positionChecker(rect)) {
-                        $(this).trigger( "inSA:in", rect, $main );
+                        $(this).trigger( "area:in", rect, $main );
 
                         if (settings.debug && settings.debugOptions.elIdentifier) {
                             _this.debug.setOutline(true, $(this));
                         }
                     } else {
-                        $(this).trigger( "inSA:out",  rect, $main );
+                        $(this).trigger( "area:out",  rect, $main );
                         if (settings.debug && settings.debugOptions.elIdentifier) {
                             _this.debug.setOutline(false, $(this));
                         }
@@ -154,7 +155,9 @@
                             'height'    : settings.height,
                             'top'       : settings.offset,
                             'left'      : 0,
-                            'background': settings.debugOptions.background,
+                            'background': settings.debugOptions.areaBgColor,
+                            'outline': settings.debugOptions.areaOutline,
+                            'outline-offset': -5,
                             'pointer-events': 'none'
                         });
                         $('body').append(debugEl);
