@@ -1,3 +1,7 @@
+// jquery.inScreenArea, v1
+// Made by Dimitri van der Vliet
+// Distributed under Apache-2.0
+// https://github.com/HolygrowJS/inScreenArea
 (function( $ ){
     'use strict';
     var id = 0;
@@ -10,7 +14,7 @@
                 elementTolerance: 0,
                 debug: false,
                 debugOptions: {
-                    areaBgColor: 'rgba(255,216,0, 0.05)',
+                    areaBgColor: 'rgba(255,216,0, 0.054)',
                     areaOutline: '5px #FFD800 dashed',
                     zIndex: '999',
                     elIdentifier: true,
@@ -46,26 +50,26 @@
             },
             watch: function(){
                 var _this = this;
-                _this.inView();
+                _this.inArea();
 
                 if (settings.onScrollDelay) {
                     // set delay for performance reasons (Throttling)
                     var scrollTimer;
-                    settings.context.on('resize scroll.inScreenArea' + $main.id, function() {
+                    settings.context.on('scroll.inScreenArea' + $main.id, function() {
                         scrollTimer = setTimeout(function() {
-                            _this.inView();
+                            _this.inArea();
                         }, settings.onScrollDelay);
                     });
                 } else {
-                    settings.context.on('resize scroll.inScreenArea' + $main.id, function(){
-                        _this.inView();
+                    settings.context.on('scroll.inScreenArea' + $main.id, function(){
+                        _this.inArea();
                     })
                 }
 
 
                 _this.calcArea();
                 var resizeTimeout;
-                settings.context.resize(function() {
+                settings.context.on('resize.inScreenArea' + $main.id, function() {
                     // Debouncing
                     if(!!resizeTimeout){ clearTimeout(resizeTimeout); }
                     resizeTimeout = setTimeout(function(){
@@ -75,36 +79,56 @@
 
 
             },
-            inView: function() {
+            inArea: function() {
                 var _this = this;
                 // each passed jquery object
-                $.each($main, function(){
-                    var rect = this.getBoundingClientRect();
+                $main.each(function(){
+                    var rect        = this.getBoundingClientRect(),
+                        position    = _this.positionChecker(rect),
+                        positionDetails = {
+                            viewport: rect,
+                            area: position.details
+                        },
+                        areaDetails = {
+                            offset:     _this.areaOffset,
+                            height:     _this.areaHeight
+                        },
+                        $this = $(this);
 
-                    if (_this.positionChecker(rect)) {
-                        $(this).trigger( "area:in", rect, $main );
+                    $this.tolerance = _this.elTolerance;
+
+                    if (position.inArea) {
+                        $this.trigger( "area:in", [$this, positionDetails, areaDetails] );
 
                         if (settings.debug && settings.debugOptions.elIdentifier) {
-                            _this.debug.setOutline(true, $(this));
+                            _this.debug.setOutline(true, $this);
                         }
                     } else {
-                        $(this).trigger( "area:out",  rect, $main );
+                        $this.trigger( "area:out", [$this, positionDetails, areaDetails] );
+
                         if (settings.debug && settings.debugOptions.elIdentifier) {
-                            _this.debug.setOutline(false, $(this));
+                            _this.debug.setOutline(false, $this);
                         }
                     }
                 })
 
             },
             positionChecker: function(rect){
-                //console.log(settings.elementTolerance);
-                if (this.elementTolerance == 0) {
-                    // it isn't necessary to calc
-                    return rect.top >= this.areaOffset && rect.bottom <= this.areaOffset + this.areaHeight
-                } else {
-                    // use unitTranslator for
-                    this.elPercentage = this.unitTranslator(settings.elementTolerance, rect.height);
-                    return rect.top >= this.areaOffset - this.elPercentage && rect.bottom <= this.areaOffset + this.areaHeight + this.elPercentage
+                this.elTolerance = 0;
+
+                if (settings.elementTolerance != 0) {
+                    // use unitTranslator
+                    this.elTolerance = this.unitTranslator(settings.elementTolerance, rect.height);
+                }
+
+                var inArea = rect.top >= this.areaOffset - this.elTolerance && rect.bottom <= this.areaOffset + this.areaHeight + this.elTolerance;
+
+                return {
+                    inArea: inArea,
+                    details: {
+                        fromTop:    rect.top - this.areaOffset,
+                        ratio:      Math.round( (rect.top - this.areaOffset ) / this.areaHeight * 1000) / 1000
+                    }
                 }
             },
             unitTranslator: function(unit, relative){
@@ -141,12 +165,13 @@
 
             debug: {
                 init: function(){
-                    if (settings.context.get() != $(window).get()) {
-                        // Easy debugging only works on context that uses the fullscreen beacouse it's built with position: fixed
-                        console.warn("debugging doesn't work well on windows that aren't fullscreen");
-                    }
-
                     if (settings.debug) {
+
+                        if (settings.context.outerHeight() != $(window).outerWidth()) {
+                            // Easy debugging only works on context that uses the fullscreen beacouse it's built with position: fixed
+                            console.warn("debugging doesn't work well on windows that aren't fullscreen");
+                        }
+
                         // simple debugging element
                         var debugEl = $('<div>').css({
                             'position'  : 'fixed',
@@ -156,22 +181,23 @@
                             'top'       : settings.offset,
                             'left'      : 0,
                             'background': settings.debugOptions.areaBgColor,
-                            'outline': settings.debugOptions.areaOutline,
-                            'outline-offset': -5,
+                            'border': settings.debugOptions.areaOutline,
                             'pointer-events': 'none'
-                        });
+                        })
+                        .addClass('debugger-' + $main.id);
+
                         $('body').append(debugEl);
                     }
                 },
-                setOutline: function(type, el) {
+                setOutline: function(type, $el) {
                     // If type is true set Outline Green
                     if (type) {
-                        el.css({
+                        $el.css({
                             'outline': settings.debugOptions.elIdentifierStyle.in,
                             'outline-offset': -4
                         });
                     } else {
-                        el.css({
+                        $el.css({
                             'outline': settings.debugOptions.elIdentifierStyle.out,
                             'outline-offset': -4
                         });
@@ -183,6 +209,7 @@
                 $main.destroy = function(){
                     // Kill all events
                     settings.context.off('.inScreenArea' + $main.id);
+                    $('.debugger-' + $main.id).remove();
                 }
             }
         };
