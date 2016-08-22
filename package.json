@@ -27,7 +27,7 @@
     "display",
     "show",
     "overflow",
-    "scroll",
+    "scroll"
   ],
   "devDependencies": {
     "gulp": "^3.9.1",

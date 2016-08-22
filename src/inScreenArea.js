@@ -38,7 +38,7 @@
             init: function(){
                 // private
                 this.calcArea();
-                this.watch();
+                this.listener();
                 this.debug.init();
 
                 // public
@@ -48,7 +48,7 @@
                 this.areaOffset = this.unitTranslator(settings.offset, settings.context.height());
                 this.areaHeight = this.unitTranslator(settings.height, settings.context.height());
             },
-            watch: function(){
+            listener: function(){
                 var _this = this;
                 _this.inArea();
 
@@ -97,15 +97,23 @@
 
                     $this.tolerance = _this.elTolerance;
 
+                    // BOOlEANS:
+                    // TRUE  == in area
+                    // FALSE == out area
+
                     if (position.inArea) {
+                        _this.dataAttrCheck(true, $this);
                         $this.trigger( "area:in", [$this, positionDetails, areaDetails] );
 
+                        // Debugging outline
                         if (settings.debug && settings.debugOptions.elIdentifier) {
                             _this.debug.setOutline(true, $this);
                         }
                     } else {
+                        _this.dataAttrCheck(false, $this);
                         $this.trigger( "area:out", [$this, positionDetails, areaDetails] );
 
+                        // Debugging outline
                         if (settings.debug && settings.debugOptions.elIdentifier) {
                             _this.debug.setOutline(false, $this);
                         }
@@ -162,7 +170,29 @@
 
                 return Math.round(unit);
             },
+            dataAttrCheck: function(type, $el){
+                var dataAttr = $el.data(),
+                    prefix   = 'area';
+                // Stop when data attribute is not used
+                if ($.isEmptyObject(dataAttr)) {
+                   return;
+                }
+                // change type from bool to string
+                var typeStr = type ? 'In' : 'Out',
+                    altType = type ? 'Out' : 'In';
 
+                if (dataAttr[prefix + typeStr]){
+                    $el.addClass(dataAttr[prefix + typeStr]);
+                };
+
+                if (dataAttr[prefix + typeStr + 'Toggle']){
+                    $el.addClass(dataAttr[prefix + typeStr + 'Toggle']);
+                }
+
+                if (dataAttr[prefix + altType + 'Toggle']){
+                    $el.removeClass(dataAttr[prefix + altType + 'Toggle']);
+                }
+            },
             debug: {
                 init: function(){
                     if (settings.debug) {
